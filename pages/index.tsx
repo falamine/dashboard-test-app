@@ -25,7 +25,7 @@ const Home: NextPage = () => {
     const [transactions, setTransactions] = useState({data: []} as Transactions);
     const fetched = async (searchParam: string) => {
         const res = await axios.get('/api/get-transactions');
-        setTransactions(res)
+        setTransactions(res.data)
     }
 
 
