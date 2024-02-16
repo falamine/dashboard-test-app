@@ -16,10 +16,13 @@ export default async function handler(
     const stringPath = time + 'GET/api/en/transaction/find-by-user';
     const hash = CryptoJS.HmacSHA256(stringPath, secret);
     const signature = CryptoJS.enc.Base64.stringify(hash);
+    let query = req.query;
+    let {p} = query;
 
 
     try {
         const transRes = await axios.get('https://yayawallet.com/api/en/transaction/find-by-user', {
+            params: {"p": p},
             headers: {
                 "YAYA-API-KEY": key,
                 "YAYA-API-TIMESTAMP":time,

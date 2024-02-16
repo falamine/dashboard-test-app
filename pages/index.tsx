@@ -3,6 +3,7 @@ import {useEffect, useState} from "react";
 import axios from "axios";
 import {headers} from "next/headers";
 import {Router, useRouter} from "next/router";
+import Pagination, {getDefaultDataParams} from "@/components/Pagination";
 
 
 interface Transaction {
@@ -19,43 +20,62 @@ interface Transaction {
     created_at_time: number
 }
 
-
 interface Transactions {
-    data: Transaction[]
+    data: Transaction[],
+    lastPage: number
 }
+
+export interface DataTableParams {
+    currentPage: number
+    itemsPerPage: number
+}
+
 const Home: NextPage = () => {
-    const [transactions, setTransactions] = useState({data: []} as Transactions);
+    const [transactions, setTransactions] = useState({data: [], lastPage: 0} as Transactions);
     const [error, setError] = useState(false);
     const [searchBy, setSearchBy] = useState('');
     const [searchParam, setSearchParam] = useState('');
+    const [dataParams, setDataParams] = useState(getDefaultDataParams())
+    const [pageCount, setPageCount] = useState(1);
     const router = useRouter();
 
     const search = async (event: { preventDefault: () => void; }) => {
         event.preventDefault();
-        const response = await axios.post('/api/search', JSON.stringify({[searchBy]: searchParam}), {
-            headers: { "Content-Type": "application/json", accept: "*/*" },
-        });
+        try {
+            const response = await axios.post('/api/search', JSON.stringify({[searchBy]: searchParam}), {
+                headers: { "Content-Type": "application/json", accept: "*/*" },
+            });
 
-        if (response?.data?.length == 0) {
-            setError(true);
-        } else setTransactions(response.data);
+            if (response?.data?.length == 0) {
+                setError(true);
+            } else setTransactions(response.data);
+        }catch (e) {
+            
+        }
+       
     }
     const fetched = async () => {
-        const res = await axios.get('/api/get-transactions');
-        setTransactions(res.data)
-    }
+        try {
+            const res = await axios.get('/api/get-transactions', {params: {'p': dataParams.currentPage}});
+            setPageCount(res?.data?.lastPage)
+            setTransactions(res.data)
 
+        } catch (e) {
+            
+        }
+    }
 
     useEffect(() => {
         fetched();
-    }, []);
+    }, [dataParams]);
+
     return(
         <div className='container-md m-5 p-5'>
             <div className='row mb-3'>
                 <form className='row' onSubmit={search}>
                     <div className='col-4'>
-                        <select className='form-select' onChange={event => setSearchBy(event.target.value)} required>
-                            <option value='' disabled selected>Search by</option>
+                        <select className='form-select' onChange={event => setSearchBy(event.target.value)} required defaultValue={' '}>
+                            <option value='' disabled>Search by</option>
                             <option value='id'>Transaction ID</option>
                             <option value='amount'>Amount</option>
                             <option value='currency'>Currency</option>
@@ -75,14 +95,12 @@ const Home: NextPage = () => {
 
             {!error &&
                 <>
-                    <div className='list-group mb-2'>{transactions?.data?.map(tr => <div className='list-group-item'
-                                                                                         key={tr.id}>
+                    <div className='list-group mb-2'>{transactions?.data?.map(tr =>
+                        <div className='list-group-item' key={tr.id}>
                             <div className="d-flex w-100 justify-content-between">
                                 <h6 className="mb-1">{tr.id}</h6>
                                 <small>{tr.created_at_time}</small>
                             </div>
-
-
                             <div className="d-flex w-100 justify-content-between">
                                 <div>
                                     <p>{tr.sender.name}</p>
@@ -91,23 +109,10 @@ const Home: NextPage = () => {
                                 <small>{tr.amount_with_currency}</small>
                             </div>
                             <small>{tr.cause}</small>
-
-
                         </div>
                     )}</div>
-                    <nav aria-label="Page navigation example">
-                        <ul className="pagination justify-content-center">
-                            <li className="page-item disabled">
-                                <a className="page-link" href="#" tabIndex={-1} aria-disabled="true">Previous</a>
-                            </li>
-                            <li className="page-item"><a className="page-link" href="#">1</a></li>
-                            <li className="page-item"><a className="page-link" href="#">2</a></li>
-                            <li className="page-item"><a className="page-link" href="#">3</a></li>
-                            <li className="page-item">
-                                <a className="page-link" href="#">Next</a>
-                            </li>
-                        </ul>
-                    </nav>
+
+                    <Pagination dataParams={dataParams} setDataParams={setDataParams} pageCount={pageCount}/>
                 </>
 }
             {error && <>
