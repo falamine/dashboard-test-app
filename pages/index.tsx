@@ -1,9 +1,9 @@
 import {NextPage} from "next";
 import {useEffect, useState} from "react";
 import axios from "axios";
-import {headers} from "next/headers";
 import {Router, useRouter} from "next/router";
 import Pagination, {getDefaultDataParams} from "@/components/Pagination";
+import Search from "@/components/Search";
 
 
 interface Transaction {
@@ -25,43 +25,25 @@ interface Transactions {
     lastPage: number
 }
 
-export interface DataTableParams {
-    currentPage: number
-    itemsPerPage: number
-}
-
 const Home: NextPage = () => {
     const [transactions, setTransactions] = useState({data: [], lastPage: 0} as Transactions);
     const [error, setError] = useState(false);
-    const [searchBy, setSearchBy] = useState('');
-    const [searchParam, setSearchParam] = useState('');
+    const [errorMsg, setErrorMsg] = useState('');
+    const [dataFetched, setDataFetched] = useState(false);
     const [dataParams, setDataParams] = useState(getDefaultDataParams())
     const [pageCount, setPageCount] = useState(1);
     const router = useRouter();
 
-    const search = async (event: { preventDefault: () => void; }) => {
-        event.preventDefault();
-        try {
-            const response = await axios.post('/api/search', JSON.stringify({[searchBy]: searchParam}), {
-                headers: { "Content-Type": "application/json", accept: "*/*" },
-            });
-
-            if (response?.data?.length == 0) {
-                setError(true);
-            } else setTransactions(response.data);
-        }catch (e) {
-            
-        }
-       
-    }
     const fetched = async () => {
         try {
             const res = await axios.get('/api/get-transactions', {params: {'p': dataParams.currentPage}});
             setPageCount(res?.data?.lastPage)
             setTransactions(res.data)
+            setDataFetched(true)
 
         } catch (e) {
-            
+            setError(true)
+            setErrorMsg('Error fetching data')
         }
     }
 
@@ -70,40 +52,14 @@ const Home: NextPage = () => {
     }, [dataParams]);
 
     return(
-        <div className="flex flex-col gap-2">
-
-                    <form className='w-full' onSubmit={search}>
-                        <div className='flex flex-wrap gap-2 align-middle'>
-                            <div>
-                                <select
-                                    className='block appearance-none w-full  border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500'
-                                    onChange={event => setSearchBy(event.target.value)} required
-                                    defaultValue={' '}>
-                                    <option value='' disabled>Search by</option>
-                                    <option value='id'>Transaction ID</option>
-                                    <option value='amount'>Amount</option>
-                                    <option value='currency'>Currency</option>
-                                    <option value='sender'>Sender</option>
-                                    <option value='receiver'>Receiver</option>
-                                </select>
-                            </div>
-                            <div className='grow'>
-                                <input
-                                    className='appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500" id="grid-zip" type="text" placeholder="90210"'
-                                    type='text' placeholder='search field'
-                                    onChange={event => setSearchParam(event.target.value)} required/>
-                            </div>
-                            <div className=''>
-                                <button type='submit' className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'>Search</button>
-                            </div>
-
-                        </div>
-
-                    </form>
-
-
-            {!error &&
-                <>
+        <div className="flex flex-col gap-2 p-10">
+            <Search setTransactions={setTransactions} setError={setError}></Search>
+            {error ? <div className="flex flex-col">
+                    <span className="text-red-900 text-center">{errorMsg != ""? errorMsg : "No Data Found"}</span>
+                    <span><button className="" onClick={router.reload}>Back</button></span>
+                </div>
+                : !dataFetched ? <div className="font-bold">Loading...</div>
+                : <>
                     <div className="">{transactions?.data?.map(tr =>
                             <div className='w-100 bg-white border-bottom border-black my-1' key={tr.id}>
                                 <div className="flex p-2">
@@ -136,31 +92,14 @@ const Home: NextPage = () => {
                                         </div>
                                     </div>
                                 </div>
-                                {/*<div className="d-flex w-100 justify-content-between">
-                                    <h6 className="mb-1">{tr.id}</h6>
-
-                                </div>
-                                <div className="d-flex w-100 justify-content-between">
-                                    <div>
-
-                                    </div>
-
-                                </div>
-                                <small>{tr.cause}</small>*/}
                             </div>
                         )}</div>
 
                         <Pagination dataParams={dataParams} setDataParams={setDataParams} pageCount={pageCount}/>
                     </>
                 }
-                {error && <>
-                    <button className=' btn btn-secondary' onClick={router.reload}>Back</button>
-                    <p color='red'>No Data Found</p></>}
         </div>
-
-
 )
 }
-
 
 export default Home;

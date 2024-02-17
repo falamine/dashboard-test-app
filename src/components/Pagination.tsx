@@ -16,32 +16,42 @@ export function getDefaultDataParams() : DataTableParams {
 }
 const Pagination = (props: DataTableProps) => {
     return (
-        <nav aria-label="Page navigation example">
-        <ul className="pagination justify-content-center">
-            <li className="page-item">
-                <button className="page-link" onClick={_ => props.setDataParams((prev: DataTableParams) => ({
+
+        <div className="flex flex-wrap gap-5 border border-gray-300 rounded w-fit place-self-end my-1">
+            <div className="bg-transparent  hover:bg-gray-500 hover:text-white text-black py-3 px-2 ">
+                <button className="" onClick={_ => props.setDataParams((prev: DataTableParams) => ({
                     ...prev,
                     currentPage: 0
-                }))} tabIndex={-1}>First Page</button>
-            </li>
-            <li className="page-item"><button className="page-link" disabled={props.dataParams.currentPage <=0} onClick={_ => props.setDataParams((prev: DataTableParams) => ({
-                ...prev,
-                currentPage: prev.currentPage - 1
-            }))}>Previous Page</button></li>
-
-            <li><a className="page-link" >Page{" "}{props.dataParams.currentPage + 1}{" of "}{props.pageCount}</a></li>
-
-            <li className="page-item" ><button className="page-link" disabled={props.dataParams.currentPage == props.pageCount - 1} onClick={_ => props.setDataParams((prev: DataTableParams) => ({
-                ...prev,
-                currentPage: prev.currentPage + 1
-            }))}>Next Page</button></li>
-            <li className="page-item"><a className="page-link" href="#"  onClick={_ => props.setDataParams((prev: DataTableParams) => ({
-                ...prev,
-                currentPage: props.pageCount - 1
-            }))}>Last Page</a></li>
-
-        </ul>
-    </nav>
+                }))} tabIndex={-1}>First Page
+                </button>
+            </div>
+            <div className="bg-transparent  hover:bg-gray-500 hover:text-white text-black py-3 px-2">
+                <button className="" disabled={props.dataParams.currentPage <= 0}
+                        onClick={_ => props.setDataParams((prev: DataTableParams) => ({
+                            ...prev,
+                            currentPage: prev.currentPage - 1
+                        }))}><i className="bi bi-chevron-double-left"></i>
+                </button>
+            </div>
+            <div className="bg-transparent text-black py-3 px-2">
+                <text>Page{" "}{props.dataParams.currentPage + 1}{" of "}{props.pageCount}</text>
+            </div>
+            <div className="bg-transparent hover:bg-gray-500 hover:text-white text-black py-3 px-2">
+                <button className="" disabled={props.dataParams.currentPage == props.pageCount - 1}
+                        onClick={_ => props.setDataParams((prev: DataTableParams) => ({
+                            ...prev,
+                            currentPage: prev.currentPage + 1
+                        }))}><i className="bi bi-chevron-double-right"/>
+                </button>
+            </div>
+            <div className="bg-transparent  hover:bg-gray-500 hover:text-white text-black py-3 px-2">
+                <button className=""
+                   onClick={_ => props.setDataParams((prev: DataTableParams) => ({
+                       ...prev,
+                       currentPage: props.pageCount - 1
+                   }))}>Last Page</button>
+        </div>
+        </div>
     )
 }
 export default Pagination
