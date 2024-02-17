@@ -17,9 +17,9 @@ I have provided that and was able to fetch the data successfully.
 # How to test the app in local development environment
 git clone https://github.com/falamine/dashboard-test-app.git
 
-npm install
+`npm install`
 
-npm run dev
+`npm run dev`
 
 Navigate to the url http://localhost:3000/
 
