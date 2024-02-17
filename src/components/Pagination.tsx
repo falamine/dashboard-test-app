@@ -17,7 +17,7 @@ export function getDefaultDataParams() : DataTableParams {
 const Pagination = (props: DataTableProps) => {
     return (
 
-        <div className="flex flex-wrap gap-5 border border-gray-300 rounded w-fit place-self-end my-1">
+        <div className="flex flex-wrap gap-5 border border-gray-300 bg-gray-100 rounded w-fit place-self-end my-1">
             <div className="bg-transparent  hover:bg-gray-500 hover:text-white text-black py-3 px-2 ">
                 <button className="" onClick={_ => props.setDataParams((prev: DataTableParams) => ({
                     ...prev,
